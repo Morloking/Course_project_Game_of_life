@@ -1,4 +1,4 @@
-#include "Field.h"
+#include "field.h"
 
 #include <cstdlib> //for function system clear
 
@@ -147,3 +147,4 @@ namespace game_of_life {
 
 	Field::~Field() {};
 }
+
