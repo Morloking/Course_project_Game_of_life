@@ -2,5 +2,6 @@
 
 int main() {
 	game_of_life::Field f1;
+	return 0;
 }
 
