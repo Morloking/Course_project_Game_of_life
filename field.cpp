@@ -10,8 +10,7 @@
 namespace game_of_life {
 	Field::Field()
 	{
-		readStartFile();
-		runGame();
+		readStartFile(); //===============1).только инициализация из файла в конструкторе
 	}
 
 	void Field::readStartFile() {
@@ -29,15 +28,27 @@ namespace game_of_life {
 				vIsAlive[i].resize(columns);
 			}
 			int currRow{ 0 }; int currColumn{ 0 };
-			while (file >> currRow >> currColumn) { vIsAlive[currRow][currColumn] = true; }
+			while (file >> currRow >> currColumn) { 
+				if (currRow >= 0 && currRow < rows && currColumn >= 0 && currColumn < columns) { //====================3)проверка границ
+					vIsAlive[currRow][currColumn] = true;
+				}
+				else {
+					std::cerr << "Error: invalid coordinates\n";
+				}
+			}
+			file.close();
 		}
-		file.close();
+		else {									// ======================2).если файл не открылся, сообщение об ошибке и выход
+			std::cerr << "Error: can't open file\n"; 
+			return;
+		}
+		
 	}
 
 	void Field::runGame() {
 		printFields();
-		while (!checkOver()) { 
-			updateFields(); 
+		while (!checkOver()) {
+			updateFields();
 		}
 		gameOver(reasonDead);
 	}
@@ -61,29 +72,15 @@ namespace game_of_life {
 		// алгоритм изменения состояния ячейки  и алгоритм прохода по ячейкам поля
 		for (int i = 0; i < prevIsAlive.size(); ++i) {
 			for (int j = 0; j < prevIsAlive[i].size(); ++j) {
+
+				int count = countingNeighbours(i,j,prevIsAlive);//==================4).убрал дублирование
 				//если клетка мёртвая
 				if (prevIsAlive[i][j] == false) {
-					int count{ 0 };
-					for (int str = i - 1; str <= i+1; ++str) {
-						if (str < 0||str>=rows) continue;
-						for (int stlb = j - 1; stlb <= j + 1; ++stlb) {
-							if (stlb < 0||stlb>=columns||(str == i && stlb == j)) continue;
-							if (prevIsAlive[str][stlb] == true) { ++count; }
-						}
-					}
 					if (count == 3) { vIsAlive[i][j] = true; } //оживление мёртвой клетки, если есть 3 живых соседа
 				}
 				//если клетка живая
 				else {
-					int count{ 0 };
-					for (int str = i - 1; str <= i + 1; ++str) {
-						if (str < 0 || str >= rows) continue;
-						for (int stlb = j - 1; stlb <= j + 1; ++stlb) {
-							if (stlb < 0 || stlb >= columns||(str==i&&stlb==j)) continue;
-							if (prevIsAlive[str][stlb] == true) { ++count; }
-						}
-					}
-					if (count == 3||count==2) { vIsAlive[i][j] = true; } //2 или 3 живых соседа - клетка живёт
+					if (count == 3 || count == 2) { vIsAlive[i][j] = true; } //2 или 3 живых соседа - клетка живёт
 					else { vIsAlive[i][j] = false; } //в ином случае - умирает от одиночества или перенаселённости
 				}
 			}
@@ -94,6 +91,18 @@ namespace game_of_life {
 		printFields(); //печать полей
 	}
 
+	int Field::countingNeighbours(int i, int j, const std::vector<std::vector<bool>>& field) {
+		int count{ 0 };
+		for (int str = i - 1; str <= i + 1; ++str) {
+			if (str < 0 || str >= rows) continue;
+			for (int stlb = j - 1; stlb <= j + 1; ++stlb) {
+				if (stlb < 0 || stlb >= columns || (str == i && stlb == j)) continue;
+				if (field[str][stlb] == true) { ++count; }
+			}
+		}
+		return count;
+	}
+
 	bool Field::checkOver() {
 		// алгоритм выхода из игры по правилу 1 
 		bool foundAlive = false;
@@ -101,7 +110,7 @@ namespace game_of_life {
 		// алгоритм выхода из игры по правилу 2
 		bool stable = (prevIsAlive == vIsAlive);
 		if (!foundAlive) { reasonDead = 'a'; return true; } // +запись причины смерти
-		else if (stable) { reasonDead = 'b'; return true;} // +запись причины смерти
+		else if (stable) { reasonDead = 'b'; return true; } // +запись причины смерти
 		return (!foundAlive || stable);
 	}
 
@@ -130,13 +139,13 @@ namespace game_of_life {
 			}
 			return 0;
 		}
-		return 0; 
+		return 0;
 	}
 
 	void Field::gameOver(char reason) {
-		switch (reason) 
-		{ 
-		case 'a': 
+		switch (reason)
+		{
+		case 'a':
 			std::cout << "All cells are dead. Game over " << "\n";
 			break;
 		case 'b':
@@ -145,6 +154,4 @@ namespace game_of_life {
 		}
 	}
 
-	Field::~Field() {};
 }
-
