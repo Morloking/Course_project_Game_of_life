@@ -3,33 +3,37 @@
 
 namespace game_of_life {
 
-class Field
-{
+	class Field
+	{
 
-public:
-	Field(); 
-	~Field();
-private:
+	public:
+		Field();
 
-	//general functions
-	void readStartFile();
-	void runGame();
-	void printFields();
-	void printCurrState();
-	int countingAliveCells(char mode);
-	void updateFields();
-	bool checkOver();
-	void gameOver(char reason);
+		void runGame(); //====================1). Вынес отдельно старт
 
-	//internal info
-	int rows{ 0 };
-	int columns{ 0 };
-	std::vector <std::vector<bool>> vIsAlive { };
-	std::vector <std::vector<bool>> prevIsAlive{ };
-	//external info
-	int generation{ 1 };
-	char reasonDead{ 'a' };
+		~Field() = default; // ================================5).
+	private:
 
-};
+		//general functions
+		void readStartFile();
+		
+		void printFields();
+		void printCurrState();
+		int countingAliveCells(char mode);
+		void updateFields();
+		int countingNeighbours(int i, int j, const std::vector<std::vector<bool>>& field); //==================4). Для того, чтобы убрать дублирование логики
+		bool checkOver();
+		void gameOver(char reason);
+		
+		//internal info
+		int rows{ 0 };
+		int columns{ 0 };
+		std::vector <std::vector<bool>> vIsAlive{ };
+		std::vector <std::vector<bool>> prevIsAlive{ };
+		//external info
+		int generation{ 1 };
+		char reasonDead{ 'a' };
 
-}	
+	};
+
+}
